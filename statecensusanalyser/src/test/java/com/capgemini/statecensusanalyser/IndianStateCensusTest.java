@@ -8,236 +8,121 @@ import org.junit.Assert;
 import org.junit.Test;
 import com.opencsv.bean.HeaderColumnNameMappingStrategy;
 import com.opencsv.bean.MappingStrategy;
-
-public class IndianStateCensusTest {
-	private final String STATE_CENSUS_CSV_FILE = "./src/main/resources/StateCensusCSVData.csv";
-	private final String INCORRECT_STATE_CENSUS_CSV_FILE = "./src/main/resources/_StateCensusCSVData.csv";
-	private final String INCORRECT_HEADER_STATE_CENSUS_CSV_FILE = "./src/main/resources/StateCensusCSVDataIncorrectHeader.csv";
-	private final String JSON_FILE_PATH_TO_WRITE_SORTED_BY_POPULATION_DATA = "./src/main/resources/StateCensusDataSortedByPopulation.json";
-
+public class CensusAnalyserTest {
+	public static final String RIGHT_CENSUS_CSV = "./src/main/resources/StateCensusCsvData(2).csv";
+	public static final String WRONG_CENSUS_CSV = "file/IndiaStateCensusDatae.csv";
+	public static final String WRONGTYPE_CENSUS_CSV = "file/IndiaStateCensusData-WrongType.pdf";
+	public static final String WRONGDELIMITER_CENSUS_CSV = "file/IndiaStateCensusData-WrongDelimiter.csv";
+	public static final String WRONGHEADER_CENSUS_CSV = "file/IndiaStateCensusData-WrongHeader.csv";
+	public static final String RIGHT_STATE_CODE_CSV = "file/IndiaStateCode.csv";
+	public static final String WRONG_STATE_CODE_CSV = "file/IndiaStateCodetr.csv";
+	public static final String WRONGTYPE_STATE_CODE_CSV = "file/IndiaStateCode-WrongType.pdf";
+	public static final String WRONGDELIMITER_STATE_CODE_CSV = "file/IndiaStateCode-WrongDelimiter.csv";
+	public static final String WRONGHEADER_STATE_CODE_CSV = "file/IndiaStateCode-WrongHeader.csv";
 	@Test
-	public void givenTheStatesCensusCSVFile_WhenRead_NoOfRecordsShouldMatch()
-			throws CustomFileIOException, CustomCSVBuilderException {
-		StateCensusAnalyser stateCensusAnalyser = new StateCensusAnalyser();
-		MappingStrategy<CSVStateCensus> mappingStrategy = new HeaderColumnNameMappingStrategy<CSVStateCensus>();
-		mappingStrategy.setType(CSVStateCensus.class);
-		int numOfRecords = stateCensusAnalyser.loadStateCensusData(STATE_CENSUS_CSV_FILE, mappingStrategy,
-				CSVStateCensus.class, ',');
-		Assert.assertEquals(6, numOfRecords);
-	}
-
-	@Test
-	public void givenIncorrectCSVFile_ShouldReturnCustomException() throws CustomCSVBuilderException {
-		String exceptionMessage = null;
+	public void givenIndiaCensusDataCsv_ShouldReturnExactCount() {
 		try {
-			StateCensusAnalyser stateCensusAnalyser = new StateCensusAnalyser();
-			MappingStrategy<CSVStateCensus> mappingStrategy = new HeaderColumnNameMappingStrategy<CSVStateCensus>();
-			mappingStrategy.setType(CSVStateCensus.class);
-			stateCensusAnalyser.loadStateCensusData(INCORRECT_STATE_CENSUS_CSV_FILE, mappingStrategy,
-					CSVStateCensus.class, ',');
-		} catch (CustomFileIOException e) {
-			exceptionMessage = e.getMessage();
+			int recordsCount = new StateCensusAnalyser().loadStateCensusData(RIGHT_CENSUS_CSV);
+			assertEquals(6, recordsCount);
 		}
-		Assert.assertEquals(ExceptionTypeIO.FILE_PROBLEM.toString(), exceptionMessage);
-	}
+		catch (CustomStateCensusAnalyserException e) {
+			e.printStackTrace();
+		}
 
+	}
+	
 	@Test
-	public void givenIncorrectCSVType_ShouldReturnCustomException() throws CustomFileIOException {
-		String exceptionMessage = null;
+	public void givenWrongCsvFile_ShouldThrowCensusAnalyserExceptionOfTypeCensusFileProblem() {
 		try {
-			StateCensusAnalyser stateCensusAnalyser = new StateCensusAnalyser();
-			stateCensusAnalyser.loadStateCensusData(STATE_CENSUS_CSV_FILE, null, null, ',');
-		} catch (CustomCSVBuilderException e) {
-			exceptionMessage = e.getMessage();
+			new StateCensusAnalyser().loadStateCensusData(WRONG_CENSUS_CSV );
 		}
-		Assert.assertEquals(ExceptionType.PARSE_PROBLEM.toString(), exceptionMessage);
+		catch(CustomStateCensusAnalyserException e) {
+			assertEquals(CustomStateCensusAnalyserException.STATE_CENSUS_FILE_PROBLEM, e.exceptionType);
+		}
 	}
-
+	
 	@Test
-	public void givenCorrectCSVFileIncorrectDelimiter_ShouldReturnCustomException() throws CustomFileIOException {
-		String exceptionMessage = null;
+	public void givenWrongTypeCsvFile_ShouldThrowCensusAnalyserExceptionOfTypeIncorrectType() {
 		try {
-			StateCensusAnalyser stateCensusAnalyser = new StateCensusAnalyser();
-			MappingStrategy<CSVStateCensus> mappingStrategy = new HeaderColumnNameMappingStrategy<CSVStateCensus>();
-			mappingStrategy.setType(CSVStateCensus.class);
-			stateCensusAnalyser.loadStateCensusData(STATE_CENSUS_CSV_FILE, mappingStrategy, CSVStateCensus.class, '|');
-		} catch (CustomCSVBuilderException e) {
-			exceptionMessage = e.getMessage();
+			new StateCensusAnalyser().loadStateCensusData(WRONGTYPE_CENSUS_CSV );
 		}
-		Assert.assertEquals(ExceptionType.HEADER_OR_DELIMITER_PROBLEM.toString(), exceptionMessage);
+		catch(CustomStateCensusAnalyserException e) {
+			assertEquals(CustomStateCensusAnalyserException.INCORRECT_TYPE, e.exceptionType);
+		}
 	}
-
+	
 	@Test
-	public void givenCorrectCSVFileIncorrectHeader_ShouldReturnCustomException() throws CustomFileIOException {
-		String exceptionMessage = null;
+	public void givenCsvFileIncorrectDelimiter_ShouldThrowCensusAnalyserExceptionOfTypeIncorrectDelimiter() {
 		try {
-			StateCensusAnalyser stateCensusAnalyser = new StateCensusAnalyser();
-			MappingStrategy<CSVStateCensus> mappingStrategy = new HeaderColumnNameMappingStrategy<CSVStateCensus>();
-			mappingStrategy.setType(CSVStateCensus.class);
-			stateCensusAnalyser.loadStateCensusData(INCORRECT_HEADER_STATE_CENSUS_CSV_FILE, mappingStrategy,
-					CSVStateCensus.class, ',');
-		} catch (CustomCSVBuilderException e) {
-			exceptionMessage = e.getMessage();
+
+			new StateCensusAnalyser().loadStateCensusData(WRONGDELIMITER_CENSUS_CSV);
 		}
-		Assert.assertEquals(ExceptionType.HEADER_OR_DELIMITER_PROBLEM.toString(), exceptionMessage);
+		catch(CustomStateCensusAnalyserException e) {
+			assertEquals(ExceptionType.SOME_OTHER_ERRORS, e.exceptionType);
+		}
 	}
+	
+	@Test
+	public void givenCsvFileIncorrectHeader_ShouldThrowCensusAnalyserExceptionOfTypeIncorrectHeader() {
+		try {		
+			new StateCensusAnalyser().loadStateCensusData(WRONGHEADER_CENSUS_CSV );
+		}
+		catch(CustomStateCensusAnalyserException e) {
+			assertEquals(ExceptionType.SOME_OTHER_ERRORS, e.exceptionType);
+		}
+	}
+	
+	@Test
+	public void givenIndiaStateCodeCsv_ShouldReturnExactCount() {
+		try {
+			int recordsCount = new StateCensusAnalyser().loadStateCodeData(RIGHT_STATE_CODE_CSV);
+			assertEquals(37, recordsCount);
+		}
+		catch (CustomStateCensusAnalyserException e) {
+			e.printStackTrace();
+		}
 
-	@Test
-	public void givenCensusData_WhenSortedAlphabetically_ShouldGiveSortedResult()
-			throws CustomCSVBuilderException, CustomFileIOException {
-		StateCensusAnalyser stateCensusAnalyser = new StateCensusAnalyser();
-		MappingStrategy<CSVStateCensus> mappingStrategy = new HeaderColumnNameMappingStrategy<CSVStateCensus>();
-		mappingStrategy.setType(CSVStateCensus.class);
-		stateCensusAnalyser.loadStateCensusData(STATE_CENSUS_CSV_FILE, mappingStrategy, CSVStateCensus.class, ',');
-		String sortedCensusData = stateCensusAnalyser.getAlpahebeticalStateWiseCensusData();
-		CSVStateCensus[] censusCSV = new Gson().fromJson(sortedCensusData, CSVStateCensus[].class);
-		Assert.assertEquals("Assam", censusCSV[0].state);
 	}
+	
+	@Test
+	public void givenWrongIndiaStateCode_ShouldThrowCensusAnalyserExceptionOfTypeCensusFileProblem() {
+		try {
+			new StateCensusAnalyser().loadStateCodeData(WRONG_STATE_CODE_CSV);
+		}
+		catch(CustomStateCensusAnalyserException e) {
+			assertEquals(ExceptionType.STATE_CENSUS_FILE_PROBLEM, e.exceptionType);
+		}
+	}
+	
+	@Test
+	public void givenWrongTypeIndiaStateCode_ShouldThrowCensusAnalyserExceptionOfTypeIncorrectType() {
+		try {
+			new StateCensusAnalyser().loadStateCodeData(WRONGTYPE_STATE_CODE_CSV );
+		}
+		catch(CustomStateCensusAnalyserException e) {
+			assertEquals(ExceptionType.INCORRECT_TYPE, e.exceptionType);
+		}
+	}
+	
+	@Test
+	public void givenIndiaStateCodeIncorrectDelimiter_ShouldThrowCensusAnalyserExceptionOfTypeIncorrectDelimiter() {
+		try {
 
-	@Test
-	public void givenCensusData_WhenSortedByPopulationDescending_ShouldGiveSortedResult()
-			throws CustomCSVBuilderException, CustomFileIOException, IOException {
-		StateCensusAnalyser stateCensusAnalyser = new StateCensusAnalyser();
-		MappingStrategy<CSVStateCensus> mappingStrategy = new HeaderColumnNameMappingStrategy<CSVStateCensus>();
-		mappingStrategy.setType(CSVStateCensus.class);
-		stateCensusAnalyser.loadStateCensusData(STATE_CENSUS_CSV_FILE, mappingStrategy, CSVStateCensus.class, ',');
-		String sortedCensusData = stateCensusAnalyser
-				.getPopulationWiseCensusDataAndWriteToJsonFile(JSON_FILE_PATH_TO_WRITE_SORTED_BY_POPULATION_DATA);
-		CSVStateCensus[] censusCSV = new Gson().fromJson(sortedCensusData, CSVStateCensus[].class);
-		Assert.assertEquals("Uttar Pradesh", censusCSV[0].state);
+			new StateCensusAnalyser().loadStateCodeData(WRONGDELIMITER_STATE_CODE_CSV  );
+		}
+		catch(CustomStateCensusAnalyserException e) {
+			assertEquals(ExceptionType.SOME_OTHER_ERRORS, e.exceptionType);
+		}
 	}
-
+	
 	@Test
-	public void givenCensusData_WhenSortedByPopulationDensityDescending_ShouldGiveSortedResult()
-			throws CustomCSVBuilderException, CustomFileIOException, IOException {
-		StateCensusAnalyser stateCensusAnalyser = new StateCensusAnalyser();
-		MappingStrategy<CSVStateCensus> mappingStrategy = new HeaderColumnNameMappingStrategy<CSVStateCensus>();
-		mappingStrategy.setType(CSVStateCensus.class);
-		stateCensusAnalyser.loadStateCensusData(STATE_CENSUS_CSV_FILE, mappingStrategy, CSVStateCensus.class, ',');
-		String sortedCensusData = stateCensusAnalyser.getPopulationDensityWiseCensusDataAndWriteToJsonFile(
-				JSON_FILE_PATH_TO_WRITE_SORTED_BY_POPULATION_DENSITY);
-		CSVStateCensus[] censusCSV = new Gson().fromJson(sortedCensusData, CSVStateCensus[].class);
-		Assert.assertEquals("Bihar", censusCSV[0].state);
-	}
-	@Test
-	public void givenCensusData_WhenSortedByAreaOfStateDescending_ShouldGiveSortedResult() throws CustomCSVBuilderException, CustomFileIOException, IOException {
-		StateCensusAnalyser stateCensusAnalyser = new StateCensusAnalyser();
-		MappingStrategy<CSVStateCensus> mappingStrategy = new HeaderColumnNameMappingStrategy<CSVStateCensus>();
-		mappingStrategy.setType(CSVStateCensus.class);
-		stateCensusAnalyser.loadStateCensusData(STATE_CENSUS_CSV_FILE, mappingStrategy, CSVStateCensus.class, ',');
-		String sortedCensusData = stateCensusAnalyser.getAreaWiseCensusDataAndWriteToJsonFile(JSON_FILE_PATH_TO_WRITE_SORTED_BY_AREA);
-		CSVStateCensus[] censusCSV = new Gson().fromJson(sortedCensusData, CSVStateCensus[].class);
-		Assert.assertEquals("Maharashtra", censusCSV[0].state);
+	public void givenIndiaStateCodeIncorrectHeader_ShouldThrowCensusAnalyserExceptionOfTypeIncorrectHeader() {
+		try {		
+			new StateCensusAnalyser().loadStateCodeData(WRONGHEADER_STATE_CODE_CSV );
+		}
+		catch(CustomStateCensusAnalyserException e) {
+			assertEquals(ExceptionType.SOME_OTHER_ERRORS, e.exceptionType);
+		}
 	}
 }
 
-	private final String STATE_CENSUS_CSV_FILE = "./src/main/resources/StateCensusCSVData.csv";
-	private final String INCORRECT_STATE_CENSUS_CSV_FILE = "./src/main/resources/_StateCensusCSVData.csv";
-	private final String INCORRECT_HEADER_STATE_CENSUS_CSV_FILE = "./src/main/resources/StateCensusCSVDataIncorrectHeader.csv";
-	private final String JSON_FILE_PATH_TO_WRITE_SORTED_BY_POPULATION_DATA = "./src/main/resources/StateCensusDataSortedByPopulation.json";
-
-	@Test
-	public void givenTheStatesCensusCSVFile_WhenRead_NoOfRecordsShouldMatch()
-			throws CustomFileIOException, CustomCSVBuilderException {
-		StateCensusAnalyser stateCensusAnalyser = new StateCensusAnalyser();
-		MappingStrategy<CSVStateCensus> mappingStrategy = new HeaderColumnNameMappingStrategy<CSVStateCensus>();
-		mappingStrategy.setType(CSVStateCensus.class);
-		int numOfRecords = stateCensusAnalyser.loadStateCensusData(STATE_CENSUS_CSV_FILE, mappingStrategy,
-				CSVStateCensus.class, ',');
-		Assert.assertEquals(6, numOfRecords);
-	}
-
-	@Test
-	public void givenIncorrectCSVFile_ShouldReturnCustomException() throws CustomCSVBuilderException {
-		String exceptionMessage = null;
-		try {
-			StateCensusAnalyser stateCensusAnalyser = new StateCensusAnalyser();
-			MappingStrategy<CSVStateCensus> mappingStrategy = new HeaderColumnNameMappingStrategy<CSVStateCensus>();
-			mappingStrategy.setType(CSVStateCensus.class);
-			stateCensusAnalyser.loadStateCensusData(INCORRECT_STATE_CENSUS_CSV_FILE, mappingStrategy,
-					CSVStateCensus.class, ',');
-		} catch (CustomFileIOException e) {
-			exceptionMessage = e.getMessage();
-		}
-		Assert.assertEquals(ExceptionTypeIO.FILE_PROBLEM.toString(), exceptionMessage);
-	}
-
-	@Test
-	public void givenIncorrectCSVType_ShouldReturnCustomException() throws CustomFileIOException {
-		String exceptionMessage = null;
-		try {
-			StateCensusAnalyser stateCensusAnalyser = new StateCensusAnalyser();
-			stateCensusAnalyser.loadStateCensusData(STATE_CENSUS_CSV_FILE, null, null, ',');
-		} catch (CustomCSVBuilderException e) {
-			exceptionMessage = e.getMessage();
-		}
-		Assert.assertEquals(ExceptionType.PARSE_PROBLEM.toString(), exceptionMessage);
-	}
-
-	@Test
-	public void givenCorrectCSVFileIncorrectDelimiter_ShouldReturnCustomException() throws CustomFileIOException {
-		String exceptionMessage = null;
-		try {
-			StateCensusAnalyser stateCensusAnalyser = new StateCensusAnalyser();
-			MappingStrategy<CSVStateCensus> mappingStrategy = new HeaderColumnNameMappingStrategy<CSVStateCensus>();
-			mappingStrategy.setType(CSVStateCensus.class);
-			stateCensusAnalyser.loadStateCensusData(STATE_CENSUS_CSV_FILE, mappingStrategy, CSVStateCensus.class, '|');
-		} catch (CustomCSVBuilderException e) {
-			exceptionMessage = e.getMessage();
-		}
-		Assert.assertEquals(ExceptionType.HEADER_OR_DELIMITER_PROBLEM.toString(), exceptionMessage);
-	}
-
-	@Test
-	public void givenCorrectCSVFileIncorrectHeader_ShouldReturnCustomException() throws CustomFileIOException {
-		String exceptionMessage = null;
-		try {
-			StateCensusAnalyser stateCensusAnalyser = new StateCensusAnalyser();
-			MappingStrategy<CSVStateCensus> mappingStrategy = new HeaderColumnNameMappingStrategy<CSVStateCensus>();
-			mappingStrategy.setType(CSVStateCensus.class);
-			stateCensusAnalyser.loadStateCensusData(INCORRECT_HEADER_STATE_CENSUS_CSV_FILE, mappingStrategy,
-					CSVStateCensus.class, ',');
-		} catch (CustomCSVBuilderException e) {
-			exceptionMessage = e.getMessage();
-		}
-		Assert.assertEquals(ExceptionType.HEADER_OR_DELIMITER_PROBLEM.toString(), exceptionMessage);
-	}
-
-	@Test
-	public void givenCensusData_WhenSortedAlphabetically_ShouldGiveSortedResult()
-			throws CustomCSVBuilderException, CustomFileIOException {
-		StateCensusAnalyser stateCensusAnalyser = new StateCensusAnalyser();
-		MappingStrategy<CSVStateCensus> mappingStrategy = new HeaderColumnNameMappingStrategy<CSVStateCensus>();
-		mappingStrategy.setType(CSVStateCensus.class);
-		stateCensusAnalyser.loadStateCensusData(STATE_CENSUS_CSV_FILE, mappingStrategy, CSVStateCensus.class, ',');
-		String sortedCensusData = stateCensusAnalyser.getAlpahebeticalStateWiseCensusData();
-		CSVStateCensus[] censusCSV = new Gson().fromJson(sortedCensusData, CSVStateCensus[].class);
-		Assert.assertEquals("Assam", censusCSV[0].state);
-	}
-
-	@Test
-	public void givenCensusData_WhenSortedByPopulationDescending_ShouldGiveSortedResult()
-			throws CustomCSVBuilderException, CustomFileIOException, IOException {
-		StateCensusAnalyser stateCensusAnalyser = new StateCensusAnalyser();
-		MappingStrategy<CSVStateCensus> mappingStrategy = new HeaderColumnNameMappingStrategy<CSVStateCensus>();
-		mappingStrategy.setType(CSVStateCensus.class);
-		stateCensusAnalyser.loadStateCensusData(STATE_CENSUS_CSV_FILE, mappingStrategy, CSVStateCensus.class, ',');
-		String sortedCensusData = stateCensusAnalyser
-				.getPopulationWiseCensusDataAndWriteToJsonFile(JSON_FILE_PATH_TO_WRITE_SORTED_BY_POPULATION_DATA);
-		CSVStateCensus[] censusCSV = new Gson().fromJson(sortedCensusData, CSVStateCensus[].class);
-		Assert.assertEquals("Uttar Pradesh", censusCSV[0].state);
-	}
-
-	@Test
-	public void givenCensusData_WhenSortedByPopulationDensityDescending_ShouldGiveSortedResult()
-			throws CustomCSVBuilderException, CustomFileIOException, IOException {
-		StateCensusAnalyser stateCensusAnalyser = new StateCensusAnalyser();
-		MappingStrategy<CSVStateCensus> mappingStrategy = new HeaderColumnNameMappingStrategy<CSVStateCensus>();
-		mappingStrategy.setType(CSVStateCensus.class);
-		stateCensusAnalyser.loadStateCensusData(STATE_CENSUS_CSV_FILE, mappingStrategy, CSVStateCensus.class, ',');
-		String sortedCensusData = stateCensusAnalyser.getPopulationDensityWiseCensusDataAndWriteToJsonFile(
-				JSON_FILE_PATH_TO_WRITE_SORTED_BY_POPULATION_DENSITY);
-		CSVStateCensus[] censusCSV = new Gson().fromJson(sortedCensusData, CSVStateCensus[].class);
-		Assert.assertEquals("Bihar", censusCSV[0].state);
-	}
-}
