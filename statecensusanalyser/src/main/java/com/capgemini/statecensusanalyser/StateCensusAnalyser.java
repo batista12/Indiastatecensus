@@ -1,10 +1,14 @@
 package com.capgemini.statecensusanalyser;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.List;
+import com.capgemini.opencsvbuilder.CSVBuilderFactory;
+import com.capgemini.opencsvbuilder.CustomCSVBuilderException;
+import com.capgemini.opencsvbuilder.ICSVBuilder;
 import com.google.gson.Gson;
 import com.opencsv.bean.MappingStrategy;
 
@@ -64,6 +68,19 @@ public class StateCensusAnalyser {
 		}
 	}
 
+	private void sortDescending(Comparator<CSVStateCensus> censusComparator) {
+		for (int i = 0; i < csvStateCensusList.size(); i++) {
+			for (int j = 0; j < csvStateCensusList.size() - i - 1; j++) {
+				CSVStateCensus censusOne = csvStateCensusList.get(j);
+				CSVStateCensus censusTwo = csvStateCensusList.get(j + 1);
+				if (censusComparator.compare(censusOne, censusTwo) < 0) {
+					csvStateCensusList.set(j, censusTwo);
+					csvStateCensusList.set(j + 1, censusOne);
+				}
+			}
+		}
+	}
+
 	public String getAlpahebeticalStateCodeWiseData() {
 		Comparator<CSVStates> codeComparator = Comparator.comparing(codelist -> codelist.code);
 		this.sortCodeWise(codeComparator);
@@ -84,5 +101,14 @@ public class StateCensusAnalyser {
 		}
 
 	}
-}
 
+	public String getPopulationWiseCensusDataAndWriteToJsonFile(String jsonFilePath) throws IOException {
+		FileWriter fileWriter = new FileWriter(jsonFilePath);
+		Comparator<CSVStateCensus> censusComparator = Comparator.comparing(census -> census.population);
+		this.sortDescending(censusComparator);
+		String sortedStateCensus = new Gson().toJson(csvStateCensusList);
+		fileWriter.write(sortedStateCensus);
+		fileWriter.close();
+		return sortedStateCensus;
+	}
+}

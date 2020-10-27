@@ -75,4 +75,14 @@ public class StateCodeTest {
 		}
 		Assert.assertEquals(ExceptionTypeStateCode.STATE_CODE_HEADER_OR_DELIMITER_PROBLEM.toString(), exceptionMessage);
 	}
+	@Test
+	public void givenStateCodeData_WhenSortedAlphabeticallyOnCode_ShouldGiveSortedResult() throws CustomCSVBuilderException, CustomFileIOException {
+		StateCensusAnalyser stateCensusAnalyser = new StateCensusAnalyser();
+		MappingStrategy<CSVStates> mappingStrategy = new HeaderColumnNameMappingStrategy<CSVStates>();
+		mappingStrategy.setType(CSVStates.class);
+		stateCensusAnalyser.loadStateCodeData(STATE_CODE_CSV_FILE, mappingStrategy, CSVStates.class, ',');
+		String sortedCodeData = stateCensusAnalyser.getAlpahebeticalStateCodeWiseData();
+		CSVStates[] codeCSV = new Gson().fromJson(sortedCodeData, CSVStates[].class);
+		Assert.assertEquals("BR", codeCSV[0].code);
+	}
 }
