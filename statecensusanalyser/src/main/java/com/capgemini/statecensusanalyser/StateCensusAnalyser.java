@@ -11,53 +11,43 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.StreamSupport;
 import com.opencsv.bean.MappingStrategy;
-/**
- * @author ASUS
- *
- */
+
 public class StateCensusAnalyser {
-	public int loadCensusData(String csvfilePath) throws CustomStateCensusAnalyserException {
-		try {	
-			Reader reader;
-			reader = Files.newBufferedReader(Paths.get(csvfilePath));
-			CsvToBeanBuilder<CSVStateCensus> csvToBeanBuilder = new CsvToBeanBuilder<>(reader);
-			csvToBeanBuilder.withType(CSVStateCensus.class);
-			csvToBeanBuilder.withIgnoreLeadingWhiteSpace(true);
-			CsvToBean<CSVStateCensus> csvToBean = csvToBeanBuilder.build();
-			Iterator<CSVStateCensus> csvStateCensusIterator = csvToBean.iterator();
-			Iterable<CSVStateCensus> csvStateCensusIterable = () -> csvStateCensusIterator;
-			int numOfEntries = (int) StreamSupport.stream(csvStateCensusIterable.spliterator(), false).count();
-			return numOfEntries;
+
+	List<CSVStateCensus> csvStateCensusList;
+
+	public int loadStateCensusData(String csvFilePath, MappingStrategy<CSVStateCensus> mappingStrategy,
+			Class<? extends CSVStateCensus> csvBinderClass, final char separator)
+			throws CustomFileIOException, CustomCSVBuilderException {
+		try (Reader reader = Files.newBufferedReader(Paths.get(csvFilePath))) {
+			ICsvBuilder csvBuilder = new CsvBuilderFactory().createCSVBuilder();
+			if (csvBinderClass != null)
+				csvStateCensusList = csvBuilder.getCSVFileList(reader, CSVStateCensus.class, mappingStrategy,
+						separator);
+			else
+				csvStateCensusList = csvBuilder.getCSVFileList(reader, null, null, separator);
+			return csvStateCensusList.size();
 		} catch (IOException e) {
-			throw new CustomStateCensusAnalyserException(ExceptionType.STATE_CENSUS_FILE_PROBLEM);
-		}
-		catch(IllegalStateException e) {
-			throw new CustomStateCensusAnalyserException(ExceptionType.STATE_CENSUS_PARSE_PROBLEM);
+			throw new CustomFileIOException(ExceptionTypeIO.FILE_PROBLEM);
 		}
 	}
+
 	public int loadStateCodeData(String csvFilePath, MappingStrategy<CSVStates> mappingStrategy,
-			Class<? extends CSVStates> csvBinderClass, final char separator) throws CustomStateCodeAnalyserException {
-		try {
-			Reader reader;
-			reader = Files.newBufferedReader(Paths.get(csvFilePath));
-			CsvToBeanBuilder<CSVStates> csvToBeanBuilder = new CsvToBeanBuilder<>(reader);
-			csvToBeanBuilder.withMappingStrategy(mappingStrategy);
-			csvToBeanBuilder.withType(csvBinderClass);
-			csvToBeanBuilder.withIgnoreLeadingWhiteSpace(true);
-			csvToBeanBuilder.withSeparator(separator);
-			CsvToBean<CSVStates> csvToBean = csvToBeanBuilder.build();
-			Iterator<CSVStates> csvStateCodeIterator = csvToBean.iterator();
-			Iterable<CSVStates> csvStateCodeIterable = () -> csvStateCodeIterator;
-			int numOfEntries = (int) StreamSupport.stream(csvStateCodeIterable.spliterator(), false).count();
-			return numOfEntries;
+			Class<? extends CSVStates> csvBinderClass, final char separator)
+			throws CustomFileIOException, CustomCSVBuilderException {
+		try (Reader reader = Files.newBufferedReader(Paths.get(csvFilePath))) {
+			List<CSVStates> csvStateCodeList;
+			ICsvBuilder csvBuilder = new CsvBuilderFactory().createCSVBuilder();
+			if (csvBinderClass != null)
+				csvStateCodeList = csvBuilder.getCSVFileList(reader, CSVStates.class, mappingStrategy, separator);
+			else
+				csvStateCodeList = csvBuilder.getCSVFileList(reader, null, null, separator);
+			return csvStateCodeList.size();
 		} catch (IOException e) {
-			throw new CustomStateCodeAnalyserException(ExceptionTypeStateCode.STATE_CODE_FILE_PROBLEM);
-		} catch (IllegalStateException e) {
-			throw new CustomStateCodeAnalyserException(ExceptionTypeStateCode.STATE_CODE_PARSE_PROBLEM);
-		} catch (RuntimeException e) {
-			throw new CustomStateCodeAnalyserException(ExceptionTypeStateCode.STATE_CODE_HEADER_OR_DELIMITER_PROBLEM);
+			throw new CustomFileIOException(ExceptionTypeIO.FILE_PROBLEM);
 		}
-}
+	}
+
 	public String getAlpahebeticalStateWiseCensusData() {
 		Comparator<CSVStateCensus> censusComparator = Comparator.comparing(census -> census.state);
 		this.sort(censusComparator);
@@ -76,4 +66,5 @@ public class StateCensusAnalyser {
 				}
 			}
 		}
-	}	
+	}
+}
