@@ -55,3 +55,22 @@ public class StateCensusAnalyser {
 			throw new CustomStateCodeAnalyserException(ExceptionTypeStateCode.STATE_CODE_HEADER_OR_DELIMITER_PROBLEM);
 		}
 }
+	public String getAlpahebeticalStateWiseCensusData() {
+		Comparator<CSVStateCensus> censusComparator = Comparator.comparing(census -> census.state);
+		this.sort(censusComparator);
+		String sortedStateCensus = new Gson().toJson(csvStateCensusList);
+		return sortedStateCensus;
+	}
+
+	private void sort(Comparator<CSVStateCensus> censusComparator) {
+		for (int i = 0; i < csvStateCensusList.size(); i++) {
+			for (int j = 0; j < csvStateCensusList.size() - i - 1; j++) {
+				CSVStateCensus censusOne = csvStateCensusList.get(j);
+				CSVStateCensus censusTwo = csvStateCensusList.get(j + 1);
+				if (censusComparator.compare(censusOne, censusTwo) > 0) {
+					csvStateCensusList.set(j, censusTwo);
+					csvStateCensusList.set(j + 1, censusOne);
+				}
+			}
+		}
+	}	
