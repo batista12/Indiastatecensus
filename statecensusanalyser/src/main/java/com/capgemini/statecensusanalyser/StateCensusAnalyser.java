@@ -1,20 +1,17 @@
 package com.capgemini.statecensusanalyser;
-import com.capgemini.opencsvbuilder.*;
-import com.google.gson.Gson;
-
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
-import java.util.stream.StreamSupport;
+import com.google.gson.Gson;
 import com.opencsv.bean.MappingStrategy;
 
 public class StateCensusAnalyser {
 
 	List<CSVStateCensus> csvStateCensusList;
+	List<CSVStates> csvStateCodeList;
 
 	public int loadStateCensusData(String csvFilePath, MappingStrategy<CSVStateCensus> mappingStrategy,
 			Class<? extends CSVStateCensus> csvBinderClass, final char separator)
@@ -36,7 +33,6 @@ public class StateCensusAnalyser {
 			Class<? extends CSVStates> csvBinderClass, final char separator)
 			throws CustomFileIOException, CustomCSVBuilderException {
 		try (Reader reader = Files.newBufferedReader(Paths.get(csvFilePath))) {
-			List<CSVStates> csvStateCodeList;
 			ICsvBuilder csvBuilder = new CsvBuilderFactory().createCSVBuilder();
 			if (csvBinderClass != null)
 				csvStateCodeList = csvBuilder.getCSVFileList(reader, CSVStates.class, mappingStrategy, separator);
@@ -67,4 +63,26 @@ public class StateCensusAnalyser {
 			}
 		}
 	}
+
+	public String getAlpahebeticalStateCodeWiseData() {
+		Comparator<CSVStates> codeComparator = Comparator.comparing(codelist -> codelist.code);
+		this.sortCodeWise(codeComparator);
+		String sortedStateCodeList = new Gson().toJson(csvStateCodeList);
+		return sortedStateCodeList;
+	}
+
+	private void sortCodeWise(Comparator<CSVStates> codeComparator) {
+		for (int i = 0; i < csvStateCodeList.size(); i++) {
+			for (int j = 0; j < csvStateCodeList.size() - i - 1; j++) {
+				CSVStates codeEntryOne = csvStateCodeList.get(j);
+				CSVStates codeEntryTwo = csvStateCodeList.get(j + 1);
+				if (codeComparator.compare(codeEntryOne, codeEntryTwo) > 0) {
+					csvStateCodeList.set(j, codeEntryTwo);
+					csvStateCodeList.set(j + 1, codeEntryOne);
+				}
+			}
+		}
+
+	}
 }
+
