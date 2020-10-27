@@ -1,13 +1,27 @@
 package com.capgemini.statecensusanalyser;
+import com.opencsv.bean.CsvBindByName;
 
 /**
- * Hello world!
+ * @author ASUS
  *
  */
-public class IndianStateCensus 
-{
-    public static void main( String[] args )
-    {
-        System.out.println( "Hello World!" );
-    }
+public class IndiaStateCensus {
+	@CsvBindByName (column = "State")
+	private String stateName;
+
+	@CsvBindByName (column = "Population")
+	private String population;
+
+	@CsvBindByName (column = "AreaInSqKm")
+	private String area;
+
+	@CsvBindByName (column = "DensityPerSqKm")
+	private String density;
+
+	@Override
+	public String toString() {
+		return "IndiaStateCensus [stateName=" + stateName + ", population=" + population + ", area=" + area
+				+ ", density=" + density + "]";
+	}
 }
+
