@@ -1,6 +1,5 @@
 package com.capgemini.statecensusanalyser;
 import java.io.IOException;
-
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -22,6 +21,7 @@ public class StateCensusAnalyser {
 			throw new CustomStateCensusAnalyserException("Incorrect CSV File", ExceptionType.STATE_CENSUS_FILE_PROBLEM);
 		}
 	}
+
 	public <T> Iterator<T> getIteratorFromCsv(Reader reader, Class<T> csvBindedClass)
 			throws CustomStateCensusAnalyserException {
 		try {
