@@ -1,5 +1,4 @@
 package com.capgemini.statecensusanalyser;
-
 import com.capgemini.opencsvbuilder.*;
 import com.google.gson.Gson;
 
@@ -106,5 +105,18 @@ public class IndianStateCensusTest {
 				.getPopulationWiseCensusDataAndWriteToJsonFile(JSON_FILE_PATH_TO_WRITE_SORTED_BY_POPULATION_DATA);
 		CSVStateCensus[] censusCSV = new Gson().fromJson(sortedCensusData, CSVStateCensus[].class);
 		Assert.assertEquals("Uttar Pradesh", censusCSV[0].state);
+	}
+
+	@Test
+	public void givenCensusData_WhenSortedByPopulationDensityDescending_ShouldGiveSortedResult()
+			throws CustomCSVBuilderException, CustomFileIOException, IOException {
+		StateCensusAnalyser stateCensusAnalyser = new StateCensusAnalyser();
+		MappingStrategy<CSVStateCensus> mappingStrategy = new HeaderColumnNameMappingStrategy<CSVStateCensus>();
+		mappingStrategy.setType(CSVStateCensus.class);
+		stateCensusAnalyser.loadStateCensusData(STATE_CENSUS_CSV_FILE, mappingStrategy, CSVStateCensus.class, ',');
+		String sortedCensusData = stateCensusAnalyser.getPopulationDensityWiseCensusDataAndWriteToJsonFile(
+				JSON_FILE_PATH_TO_WRITE_SORTED_BY_POPULATION_DENSITY);
+		CSVStateCensus[] censusCSV = new Gson().fromJson(sortedCensusData, CSVStateCensus[].class);
+		Assert.assertEquals("Bihar", censusCSV[0].state);
 	}
 }

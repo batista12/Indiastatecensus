@@ -111,4 +111,14 @@ public class StateCensusAnalyser {
 		fileWriter.close();
 		return sortedStateCensus;
 	}
+
+	public String getPopulationDensityWiseCensusDataAndWriteToJsonFile(String jsonFilePath) throws IOException {
+		FileWriter fileWriter = new FileWriter(jsonFilePath);
+		Comparator<CSVStateCensus> censusComparator = Comparator.comparing(census -> census.densityPerSqKm);
+		this.sortDescending(censusComparator);
+		String sortedStateCensus = new Gson().toJson(csvStateCensusList);
+		fileWriter.write(sortedStateCensus);
+		fileWriter.close();
+		return sortedStateCensus;
+	}
 }
