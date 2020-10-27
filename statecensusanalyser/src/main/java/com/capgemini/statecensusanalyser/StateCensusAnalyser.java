@@ -32,4 +32,26 @@ public class StateCensusAnalyser {
 			throw new CustomStateCensusAnalyserException(ExceptionType.STATE_CENSUS_PARSE_PROBLEM);
 		}
 	}
+	public int loadStateCodeData(String csvFilePath, MappingStrategy<CSVStates> mappingStrategy,
+			Class<? extends CSVStates> csvBinderClass, final char separator) throws CustomStateCodeAnalyserException {
+		try {
+			Reader reader;
+			reader = Files.newBufferedReader(Paths.get(csvFilePath));
+			CsvToBeanBuilder<CSVStates> csvToBeanBuilder = new CsvToBeanBuilder<>(reader);
+			csvToBeanBuilder.withMappingStrategy(mappingStrategy);
+			csvToBeanBuilder.withType(csvBinderClass);
+			csvToBeanBuilder.withIgnoreLeadingWhiteSpace(true);
+			csvToBeanBuilder.withSeparator(separator);
+			CsvToBean<CSVStates> csvToBean = csvToBeanBuilder.build();
+			Iterator<CSVStates> csvStateCodeIterator = csvToBean.iterator();
+			Iterable<CSVStates> csvStateCodeIterable = () -> csvStateCodeIterator;
+			int numOfEntries = (int) StreamSupport.stream(csvStateCodeIterable.spliterator(), false).count();
+			return numOfEntries;
+		} catch (IOException e) {
+			throw new CustomStateCodeAnalyserException(ExceptionTypeStateCode.STATE_CODE_FILE_PROBLEM);
+		} catch (IllegalStateException e) {
+			throw new CustomStateCodeAnalyserException(ExceptionTypeStateCode.STATE_CODE_PARSE_PROBLEM);
+		} catch (RuntimeException e) {
+			throw new CustomStateCodeAnalyserException(ExceptionTypeStateCode.STATE_CODE_HEADER_OR_DELIMITER_PROBLEM);
+		}
 }
